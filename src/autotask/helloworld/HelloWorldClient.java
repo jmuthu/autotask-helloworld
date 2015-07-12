@@ -1,23 +1,18 @@
-//package autotask.helloworld;
+package autotask.helloworld;
+
+import java.util.List;
 
 import javax.xml.ws.BindingProvider;
-import javax.xml.ws.WebServiceRef;
 
 import net.autotask.atws.v1_5.ATWS;
 import net.autotask.atws.v1_5.ATWSResponse;
 import net.autotask.atws.v1_5.ATWSSoap;
-import net.autotask.atws.v1_5.ATWSZoneInfo;
-import net.autotask.atws.v1_5.CreateResponse;
-import net.autotask.atws.v1_5.Entity;
-import net.autotask.atws.v1_5.Field;
 import net.autotask.atws.v1_5.Account;
-import net.autotask.atws.v1_5.Create;
 import net.autotask.atws.v1_5.ArrayOfEntity;
-
+import net.autotask.atws.v1_5.Entity;
 
 public class HelloWorldClient {
 	// Initiate the webservice
-	@WebServiceRef(wsdlLocation = "https://webservices2.autotask.net/atservices/1.5/atws.wsdl")
 	private static ATWS service = new ATWS();
 
 	public static void main(String[] args) {
@@ -25,13 +20,13 @@ public class HelloWorldClient {
 		// Set the credentials for authentication
 		BindingProvider prov = (BindingProvider) port;
 		prov.getRequestContext().put(BindingProvider.USERNAME_PROPERTY,
-		                             "PPierce@OneBillSandbox.com");
-		prov.getRequestContext().put(BindingProvider.PASSWORD_PROPERTY,
-		                             "12345");
-		ATWSZoneInfo zone = port.getZoneInfo("username");
-		System.out.println(zone.getURL().hashCode() + "hhh");
-		System.out.println("hello");
-
+				"PPierce@OneBillSandbox.com");
+		prov.getRequestContext()
+				.put(BindingProvider.PASSWORD_PROPERTY, "12345");
+		prov.getRequestContext().put(BindingProvider.ENDPOINT_ADDRESS_PROPERTY,
+				"https://webservices2.autotask.net/ATServices/1.5/atws.asmx");
+		// ATWSZoneInfo zone = port.getZoneInfo("PPierce@OneBillSandbox.com");
+		// System.out.println("Zone info is " + zone.getURL());
 
 		Account account = new Account();
 		account.setAccountName("Aditya Jain");
@@ -50,18 +45,15 @@ public class HelloWorldClient {
 		account.setBillToAddressToUse(1);
 		account.setBillToCountryID(237);
 
-		net.autotask.atws.v1_5.Entity  accounttocreate = account;
-		net.autotask.atws.v1_5.Entity [] array = {accounttocreate};
+		ArrayOfEntity accountArray = new ArrayOfEntity();
+		accountArray.getEntity().add(account);
 
-		ArrayOfEntity entityarray = new ArrayOfEntity();
-		entityarray.equals(accounttocreate);
+		ATWSResponse response = port.create(accountArray);
+		List<Entity> results = response.getEntityResults().getEntity();
+		Account resAccount = (Account) results.get(0);
 
-		Create create = new Create();
-
-		create.setEntities(entityarray);
-		ATWSResponse response = new ATWSResponse();
-		CreateResponse createresponse = new CreateResponse();
-		response = createresponse.getCreateResult();
-
+		System.out.println("Create account response - "
+				+ response.getReturnCode() + "," + resAccount.getId() + ","
+				+ resAccount.getAccountName());
 	}
 }
